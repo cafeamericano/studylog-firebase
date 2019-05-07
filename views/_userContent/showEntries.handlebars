@@ -1,0 +1,54 @@
+<!-- Generate Cards for Each Record -->
+
+<div class="row">
+  <div class="col text-left">
+    <h2>Welcome.</h2>
+    <br>
+  </div>
+  <div class="col text-right">
+    <a href="/usercontent/entries/add/prompt"><button class="btn btn-primary">Create an Entry</button></a>
+  </div>
+</div>
+
+<!--Only show this if no records exist for the user's account-->
+{{ifNoRecordsOnFileForUser}}
+
+{{# each entries}}
+
+<div class="card mb-4">
+  <div class="card-body row">
+
+    <div class="col-2 font-weight-bold" style="min-width: 150px">{{this.date}}</div>
+    <div class="col-2">{{this.hours}} hours</div>
+    <div class="col-6">{{this.comments}}</div>
+
+    <div class="col-2 text-right">
+      <!--Edit button-->
+      <form action="/usercontent/entries/edit/prompt/" method="post" style="display: inline">
+        <input readonly style="display: none" type="text" id="idToEdit" name="idToEdit" value="{{this.id}}">
+        <button type="submit" class="btn text-primary">
+          <i class="far fa-edit"></i>
+        </button>
+      </form>
+      <!--Delete button-->
+      <form action="/usercontent/entries/delete/process" method="post" style="display: inline">
+        <input readonly style="display: none" type="text" id="idToDelete" name="idToDelete" value="{{this.id}}">
+        <button type="submit" class="btn text-primary">
+          <i class="far fa-trash-alt"></i>
+        </button>
+      </form>
+
+    </div>
+  </div>
+  <div class="card-footer">
+    <small><strong>Programming Language:</strong> {{this.proglang}}</small>
+  </div>
+</div>
+
+{{else}}
+
+<div>It doesn't appear that you've created any entries yet.</div>
+
+{{/each}}
+
+<br>
