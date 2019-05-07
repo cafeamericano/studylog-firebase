@@ -168,25 +168,39 @@ app.set('view engine', 'handlebars');
 
 //Profile management routes__________________________________________________________________________________________________
 
-    //Render the user's profiel page listing all current values
+    //Render the user's profile page listing all current values
     app.get('/profile/update/prompt', function(req, res) {
         let x = req.cookies['email']
-        FIXME:
-        var sql = "SELECT * FROM useraccounts WHERE email = '" + x + "';" 
-        connection.query(sql, function (err, results, fields) {
-            if (err) throw err;
+        var query = useraccounts.where('email', '==', x);
+        let passToView = [];
+        query.get().then(recordsRetrieved => {
+            recordsRetrieved.forEach(record => {
+                let x = record.data()
+                let y = record.id
+                x.id = y
+                passToView.push(x)
+            });
             res.render('_profileManagement/showProfile', {
-                entries: results
+                entries: passToView
             });
         });
     });
 
     //Process confirmed updates to the user's profile
     app.post('/profile/update/process', function(req, res) {
-        FIXME:
-        var sql = `UPDATE useraccounts SET profilephoto = '${req.body.profilephoto}', firstname = '${req.body.firstname}', lastname = '${req.body.lastname}', city = '${req.body.city}', state = '${req.body.state}', zip = '${req.body.zip}', country = '${req.body.country}' WHERE email = '${req.body.email}';`
-        connection.query(sql, function (err, result) {
-        })
+        let docToEditId = req.body.id;
+        var incomingData = {
+            email: req.body.email,
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            profilephoto: req.body.profilephoto,
+            city: req.body.city,
+            state: req.body.state,
+            zip: req.body.zip,
+            country: req.body.country
+        }
+        var docRef = useraccounts.doc(docToEditId);
+        docRef.update(incomingData);
         res.redirect('/profile/update/success')
     });
 
