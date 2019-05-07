@@ -1,3 +1,5 @@
+let port=process.env.PORT || 2100
+
 var express = require('express')
 var path = require('path')
 var bodyParser = require('body-parser')
@@ -329,6 +331,6 @@ app.set('view engine', 'handlebars');
 
 //START SERVER================================================================
 
-app.listen(5000, function(){
-    console.log('Server listening on Port 5000...')
+app.listen(port, function(){
+    console.log(`Server listening on Port ${port}...`)
 })
