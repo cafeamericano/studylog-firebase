@@ -224,27 +224,41 @@ app.set('view engine', 'handlebars');
 
     //Render the page for editing an existing entry
     app.post('/usercontent/entries/edit/prompt/', function(req, res) {
-        let recordToEdit = req.body.ID;
-        FIXME:
-        var sql = `SELECT * FROM entriespool WHERE ID = "${recordToEdit}";`
-        connection.query(sql, function (err, results, fields) {
+        let docToEditId = req.body.idToEdit
+        let passToView = [];
+        entriespool.get().then(recordsRetrieved => {
+            recordsRetrieved.forEach(record => {
+                let x = record.data()
+                let y = record.id
+                x.id = y
+                if(x.id === docToEditId) {
+                    passToView.push(x)
+                }
+                console.log(x)
+            });
             res.render('_userContent/editEntry', {
-                entries: results
+                entries: passToView
             });
         });
     });
-
-    //Render the page for editing an existing entry
+    
+    //Process changes to an existing entry
     app.post('/usercontent/entries/edit/process/', function(req, res) {
-        //var sql = `UPDATE entriespool SET date = "${req.body.date}", hours = "${req.body.hours}", comments = "${req.body.comments}" WHERE ID = ${req.body.ID};`
-        FIXME:
-        var sql = `UPDATE entriespool SET date = "${req.body.date}", hours = "${req.body.hours}", comments = "${req.body.comments}", proglang = "${req.body.proglang}", subtech = "${req.body.subtech}" where ID = ${req.body.ID};`
-        console.log(sql)
-        connection.query(sql, function (err, results, fields) {
-        });
+        let docToEditId = req.body.id;
+        console.log(docToEditId)
+        var incomingData = {
+            date: req.body.date,
+            hours: req.body.hours,
+            comments: req.body.comments,
+            proglang: req.body.proglang,
+        }
+        console.log(incomingData)
+        var docRef = entriespool.doc(docToEditId);
+        console.log(docRef)
+        docRef.update(incomingData);
         res.redirect('/usercontent/entries/show')
     });
-
+    
     //Show statistics
     app.get('/usercontent/entries/show/stats', function(req, res) {
         let cookiedEmail = req.cookies['email']
