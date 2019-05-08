@@ -136,23 +136,6 @@ app.set('view engine', 'handlebars');
         res.render('_accountManagement/createNewAccount', {layout: 'unauthorized'});
     });
 
-        //Process changes to an existing entry
-        app.post('/usercontent/entries/edit/process/', function(req, res) {
-            let docToEditId = req.body.id;
-            console.log(docToEditId)
-            var incomingData = {
-                date: req.body.date,
-                hours: req.body.hours,
-                comments: req.body.comments,
-                proglang: req.body.proglang,
-            }
-            console.log(incomingData)
-            var docRef = entriespool.doc(docToEditId);
-            console.log(docRef)
-            docRef.update(incomingData);
-            res.redirect('/usercontent/entries/show')
-        });
-
     //Process creation of new account given user input
     app.post('/account/create/process', function(req, res) {
         if (req.body.email === "" || req.body.password === "" || req.body.firstname === "" || req.body.lastname === "" || req.body.city === "" || req.body.country === "") {
@@ -198,22 +181,6 @@ app.set('view engine', 'handlebars');
                 res.render('_accountManagement/accountDeletionSuccess', {layout: 'unauthorized'})
             });
         });
-
-/*
-        FIXME:
-        var sql = `DELETE FROM useraccounts WHERE email = '${req.body.email}';`
-        console.log(sql)
-        connection.query(sql, function (err) {
-            if (err) throw err;
-            res.render('_accountManagement/accountDeletionSuccess', {layout: 'unauthorized'})
-        });
-            //Process entry deletion request
-            app.post('/usercontent/entries/delete/process', function(req, res) {
-                let docToDeleteId = req.body.idToDelete
-                useraccounts.doc(`${docToDeleteId}`).delete();
-                res.render('_accountManagement/accountDeletionSuccess', {layout: 'unauthorized'})
-            });
-*/
     });
 
 //Profile management routes__________________________________________________________________________________________________
@@ -286,6 +253,21 @@ app.set('view engine', 'handlebars');
         res.render('_userContent/createNewEntry');
     });
 
+    //Add an entry for the logged in user
+    app.post('/usercontent/entries/add/process', function(req, res) {
+        let cookiedEmail = req.cookies['email']
+
+        entriespool.add({
+            email: cookiedEmail,
+            date: req.body.date,
+            hours: req.body.hours,
+            comments: req.body.comments,
+            proglang: req.body.proglang,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        res.redirect('/usercontent/entries/show')
+    });
+
     //Render the page for editing an existing entry
     app.post('/usercontent/entries/edit/prompt/', function(req, res) {
         let docToEditId = req.body.idToEdit
@@ -323,6 +305,13 @@ app.set('view engine', 'handlebars');
         res.redirect('/usercontent/entries/show')
     });
     
+    //Process entry deletion request
+    app.post('/usercontent/entries/delete/process', function(req, res) {
+        let docToDeleteId = req.body.idToDelete
+        entriespool.doc(`${docToDeleteId}`).delete();
+        res.redirect('/usercontent/entries/show')
+    });
+
     //Show statistics
     app.get('/usercontent/entries/show/stats', function(req, res) {
         let cookiedEmail = req.cookies['email']
@@ -331,38 +320,14 @@ app.set('view engine', 'handlebars');
         query.get().then(recordsRetrieved => {
             recordsRetrieved.forEach(record => {
                 let x = record.data()
-                let y = record.id
-                x.id = y
                 if (x.email === cookiedEmail){
-                    hoursSum = hoursSum + x.hours
+                    hoursSum = hoursSum + parseFloat(x.hours)
                 };
             });
             res.render('_userContent/showStats', {
                 hoursSum: hoursSum
             });
         });
-    });
-
-    //Add an entry for the logged in user
-    app.post('/usercontent/entries/add/process', function(req, res) {
-        let cookiedEmail = req.cookies['email']
-
-        entriespool.add({
-            email: cookiedEmail,
-            date: req.body.date,
-            hours: req.body.hours,
-            comments: req.body.comments,
-            proglang: req.body.proglang,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        res.redirect('/usercontent/entries/show')
-    });
-
-    //Process entry deletion request
-    app.post('/usercontent/entries/delete/process', function(req, res) {
-        let docToDeleteId = req.body.idToDelete
-        entriespool.doc(`${docToDeleteId}`).delete();
-        res.redirect('/usercontent/entries/show')
     });
 
 //Logout routes__________________________________________________________________________________________________
