@@ -136,15 +136,43 @@ app.set('view engine', 'handlebars');
         res.render('_accountManagement/createNewAccount', {layout: 'unauthorized'});
     });
 
+        //Process changes to an existing entry
+        app.post('/usercontent/entries/edit/process/', function(req, res) {
+            let docToEditId = req.body.id;
+            console.log(docToEditId)
+            var incomingData = {
+                date: req.body.date,
+                hours: req.body.hours,
+                comments: req.body.comments,
+                proglang: req.body.proglang,
+            }
+            console.log(incomingData)
+            var docRef = entriespool.doc(docToEditId);
+            console.log(docRef)
+            docRef.update(incomingData);
+            res.redirect('/usercontent/entries/show')
+        });
+
     //Process creation of new account given user input
     app.post('/account/create/process', function(req, res) {
         if (req.body.email === "" || req.body.password === "" || req.body.firstname === "" || req.body.lastname === "" || req.body.city === "" || req.body.country === "") {
             res.render('_accountManagement/accountCreationFailure', {layout: 'unauthorized'})
         } else {
-            FIXME:
-            var sql = `INSERT INTO useraccounts (email, password, firstname, lastname, city, state, zip, country, profilephoto) VALUES ("${req.body.email}", "${req.body.password}", "${req.body.firstname}", "${req.body.lastname}", "${req.body.city}", "${req.body.state}", "${req.body.zip}", "${req.body.country}", "${req.body.profilephoto}")`
-            connection.query(sql, function (err, result) {
-            })
+            console.log(req.body.email)
+            console.log(req.body.password)
+            useraccounts.add({
+                email: req.body.email,
+                password: req.body.password,
+                firstname: req.body.firstname,
+                lastname: req.body.lastname,
+                profilephoto: req.body.profilephoto,
+                city: req.body.city,
+                state: req.body.state,
+                zip: req.body.zip,
+                country: req.body.country,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log
             res.render('_accountManagement/accountCreationSuccess', {layout: 'unauthorized'})
         };
     });
@@ -159,6 +187,19 @@ app.set('view engine', 'handlebars');
 
     //Render the page indicating that account deletion was successful, use unauthorized layout
     app.post('/account/delete/process', function(req, res) {
+        var query = useraccounts.where('email', '==', req.body.email);
+        let passToView = [];
+        query.get().then(recordsRetrieved => {
+            recordsRetrieved.forEach(record => {
+                let x = record.data()
+                let y = record.id
+                x.id = y
+                useraccounts.doc(`${x.id}`).delete();
+                res.render('_accountManagement/accountDeletionSuccess', {layout: 'unauthorized'})
+            });
+        });
+
+/*
         FIXME:
         var sql = `DELETE FROM useraccounts WHERE email = '${req.body.email}';`
         console.log(sql)
@@ -166,6 +207,13 @@ app.set('view engine', 'handlebars');
             if (err) throw err;
             res.render('_accountManagement/accountDeletionSuccess', {layout: 'unauthorized'})
         });
+            //Process entry deletion request
+            app.post('/usercontent/entries/delete/process', function(req, res) {
+                let docToDeleteId = req.body.idToDelete
+                useraccounts.doc(`${docToDeleteId}`).delete();
+                res.render('_accountManagement/accountDeletionSuccess', {layout: 'unauthorized'})
+            });
+*/
     });
 
 //Profile management routes__________________________________________________________________________________________________
