@@ -18,11 +18,11 @@
 <div class="card mb-4">
   <div class="card-body row">
 
-    <div class="col-2 font-weight-bold" style="min-width: 150px">{{this.date}}</div>
-    <div class="col-2">{{this.hours}} hours</div>
-    <div class="col-6">{{this.comments}}</div>
+    <div class="col-9 font-weight-bold" style="min-width: 150px">{{this.date}}</div>
+    <div class="col-3 text-right">{{this.hours}} hours</div>
+    <div class="col-12">{{this.comments}}</div>
 
-    <div class="col-2 text-right">
+    <div class="col text-right">
       <!--Edit button-->
       <form action="/usercontent/entries/edit/prompt/" method="post" style="display: inline">
         <input readonly style="display: none" type="text" id="idToEdit" name="idToEdit" value="{{this.id}}">
